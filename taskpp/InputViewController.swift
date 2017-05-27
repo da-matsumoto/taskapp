@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import RealmSwift
 
 class InputViewController: UIViewController {
   
@@ -15,12 +16,37 @@ class InputViewController: UIViewController {
   @IBOutlet weak var contentsTextField: UITextView!
   
   @IBOutlet weak var datePicker: UIDatePicker!
+  
+  var task: Task!
+  let realm = try! Realm()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+      
+        //背景をタップしたらdismisskeyboardメソッドを呼ぶように設定する
+      let tapGesture: UITapGestureRecognizer = UITapGestureRecognizer(target:self, action:#selector(dismissKeyboard))
+      self.view.addGestureRecognizer(tapGesture)
+      
+      titleTextField.text = task.title
+      contentsTextField.text = task.contents
+      datePicker.date = task.date as Date
     }
+  
+    func dismissKeyboard(){
+      //キーボードを閉じる
+      view.endEditing(true)
+    }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    try! realm.write {
+      self.task.title = self.titleTextField.text!
+      self.task.contents = self.contentsTextField.text
+      self.task.date = self.datePicker.date as NSDate
+      self.realm.add(self.task, update: true)
+    }
+    
+    super.viewWillDisappear(animated)
+  }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
